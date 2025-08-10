@@ -77,18 +77,23 @@
                 return;
             }
 
-            let livroData = {};
-
             // Função para buscar e exibir os versículos de um capítulo
             function carregarCapitulo(capitulo) {
                 versiculosContainerEl.innerHTML = '<p>Carregando versículos...</p>';
                 capituloSelecionadoEl.textContent = `Capítulo ${capitulo}`;
 
-                fetch(`https://www.abibliadigital.com.br/api/verses/nvi/${abbrev}/${capitulo}`)
-                    .then(response => response.json())
+                const apiUrl = `https://www.abibliadigital.com.br/api/verses/nvi/${abbrev}/${capitulo}`;
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
+
+                fetch(proxyUrl)
+                    .then(response => {
+                        if (response.ok) return response.json();
+                        throw new Error('A resposta da rede não foi ok.');
+                    })
                     .then(data => {
-                        versiculosContainerEl.innerHTML = ''; // Limpa o container
-                        data.verses.forEach(v => {
+                        const chapterData = JSON.parse(data.contents);
+                        versiculosContainerEl.innerHTML = '';
+                        chapterData.verses.forEach(v => {
                             const p = document.createElement('p');
                             p.innerHTML = `<span class="versiculo-numero">${v.number}</span> ${v.text}`;
                             p.className = "mb-3";
@@ -102,13 +107,18 @@
             }
 
             // Busca os detalhes do livro para popular o seletor de capítulos
-            fetch(`https://www.abibliadigital.com.br/api/books/${abbrev}`)
-                .then(response => response.json())
+            const bookApiUrl = `https://www.abibliadigital.com.br/api/books/${abbrev}`;
+            const bookProxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(bookApiUrl)}`;
+
+            fetch(bookProxyUrl)
+                .then(response => {
+                    if (response.ok) return response.json();
+                    throw new Error('A resposta da rede não foi ok.');
+                })
                 .then(data => {
-                    livroData = data;
+                    const livroData = JSON.parse(data.contents);
                     nomeLivroEl.textContent = livroData.name;
                     
-                    // Popula o <select> com os números dos capítulos
                     for (let i = 1; i <= livroData.chapters; i++) {
                         const option = document.createElement('option');
                         option.value = i;
@@ -116,12 +126,10 @@
                         seletorCapitulosEl.appendChild(option);
                     }
 
-                    // Adiciona o evento para carregar capítulos ao mudar o seletor
                     seletorCapitulosEl.addEventListener('change', (e) => {
                         carregarCapitulo(e.target.value);
                     });
 
-                    // Carrega o primeiro capítulo por padrão
                     carregarCapitulo(1);
 
                     loadingEl.style.display = 'none';
