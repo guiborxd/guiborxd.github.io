@@ -56,33 +56,43 @@
     </footer>
 
     <script>
-        // Este script busca os livros da Bíblia na API e os exibe na página.
         document.addEventListener('DOMContentLoaded', () => {
             const antigoLista = document.getElementById('antigo-lista');
             const novoLista = document.getElementById('novo-lista');
             const loadingIndicator = document.getElementById('loading');
             const listaContainer = document.getElementById('lista-livros');
 
-            listaContainer.style.display = 'none'; // Esconde a lista enquanto carrega
+            listaContainer.style.display = 'none';
 
-            fetch('https://www.abibliadigital.com.br/api/books')
-                .then(response => response.json())
+            // URL da API original
+            const apiUrl = 'https://www.abibliadigital.com.br/api/books';
+            // URL do proxy que contorna a restrição de CORS
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
+
+            fetch(proxyUrl)
+                .then(response => {
+                    if (response.ok) return response.json();
+                    throw new Error('A resposta da rede não foi ok.');
+                })
                 .then(data => {
-                    data.forEach(livro => {
+                    // O conteúdo da API original vem dentro da propriedade 'contents'
+                    const livros = JSON.parse(data.contents);
+                    
+                    livros.forEach(livro => {
                         const link = document.createElement('a');
                         link.href = `leitura.html?abbrev=${livro.abbrev.pt}`;
                         link.textContent = livro.name;
                         link.className = 'block p-3 bg-white rounded-lg shadow hover:bg-amber-100 hover:shadow-md transition-all text-center';
 
-                        if (livro.testament === 'VT') { // VT = Velho Testamento
+                        if (livro.testament === 'VT') {
                             antigoLista.appendChild(link);
-                        } else { // NT = Novo Testamento
+                        } else {
                             novoLista.appendChild(link);
                         }
                     });
 
-                    loadingIndicator.style.display = 'none'; // Esconde o "Carregando"
-                    listaContainer.style.display = 'grid'; // Mostra a lista de livros
+                    loadingIndicator.style.display = 'none';
+                    listaContainer.style.display = 'grid';
                 })
                 .catch(error => {
                     console.error('Erro ao buscar os livros:', error);
