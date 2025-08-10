@@ -76,24 +76,21 @@
                 loadingEl.innerHTML = '<p>Nenhum livro selecionado. Volte para a <a href="livros.html" class="underline">lista de livros</a>.</p>';
                 return;
             }
+            
+            const proxyBaseUrl = 'https://api.codetabs.com/v1/proxy?quest=';
 
-            // Função para buscar e exibir os versículos de um capítulo
             function carregarCapitulo(capitulo) {
                 versiculosContainerEl.innerHTML = '<p>Carregando versículos...</p>';
                 capituloSelecionadoEl.textContent = `Capítulo ${capitulo}`;
 
                 const apiUrl = `https://www.abibliadigital.com.br/api/verses/nvi/${abbrev}/${capitulo}`;
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
+                const proxyUrl = `${proxyBaseUrl}${apiUrl}`;
 
                 fetch(proxyUrl)
-                    .then(response => {
-                        if (response.ok) return response.json();
-                        throw new Error('A resposta da rede não foi ok.');
-                    })
+                    .then(response => response.json())
                     .then(data => {
-                        const chapterData = JSON.parse(data.contents);
                         versiculosContainerEl.innerHTML = '';
-                        chapterData.verses.forEach(v => {
+                        data.verses.forEach(v => {
                             const p = document.createElement('p');
                             p.innerHTML = `<span class="versiculo-numero">${v.number}</span> ${v.text}`;
                             p.className = "mb-3";
@@ -106,17 +103,12 @@
                     });
             }
 
-            // Busca os detalhes do livro para popular o seletor de capítulos
             const bookApiUrl = `https://www.abibliadigital.com.br/api/books/${abbrev}`;
-            const bookProxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(bookApiUrl)}`;
+            const bookProxyUrl = `${proxyBaseUrl}${bookApiUrl}`;
 
             fetch(bookProxyUrl)
-                .then(response => {
-                    if (response.ok) return response.json();
-                    throw new Error('A resposta da rede não foi ok.');
-                })
-                .then(data => {
-                    const livroData = JSON.parse(data.contents);
+                .then(response => response.json())
+                .then(livroData => {
                     nomeLivroEl.textContent = livroData.name;
                     
                     for (let i = 1; i <= livroData.chapters; i++) {
