@@ -56,27 +56,31 @@
     </footer>
 
     <script>
+        // Este script busca os livros da Bíblia na API e os exibe na página.
         document.addEventListener('DOMContentLoaded', () => {
             const antigoLista = document.getElementById('antigo-lista');
             const novoLista = document.getElementById('novo-lista');
             const loadingIndicator = document.getElementById('loading');
             const listaContainer = document.getElementById('lista-livros');
 
-            listaContainer.style.display = 'none';
+            listaContainer.style.display = 'none'; // Esconde a lista enquanto carrega
 
             // URL da API original
             const apiUrl = 'https://www.abibliadigital.com.br/api/books';
-            // URL do proxy que contorna a restrição de CORS
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
+            // URL de um proxy diferente e mais direto que retorna o conteúdo raw (cru)
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
 
             fetch(proxyUrl)
                 .then(response => {
-                    if (response.ok) return response.json();
+                    if (response.ok) return response.json(); // O proxy 'raw' permite o .json() direto
                     throw new Error('A resposta da rede não foi ok.');
                 })
-                .then(data => {
-                    // O conteúdo da API original vem dentro da propriedade 'contents'
-                    const livros = JSON.parse(data.contents);
+                .then(livros => {
+                    // Verificação de segurança para garantir que a resposta é um array
+                    if (!Array.isArray(livros)) {
+                        console.error("A resposta da API não é um array:", livros);
+                        throw new Error("Formato de dados inesperado da API.");
+                    }
                     
                     livros.forEach(livro => {
                         const link = document.createElement('a');
@@ -84,15 +88,15 @@
                         link.textContent = livro.name;
                         link.className = 'block p-3 bg-white rounded-lg shadow hover:bg-amber-100 hover:shadow-md transition-all text-center';
 
-                        if (livro.testament === 'VT') {
+                        if (livro.testament === 'VT') { // VT = Velho Testamento
                             antigoLista.appendChild(link);
-                        } else {
+                        } else { // NT = Novo Testamento
                             novoLista.appendChild(link);
                         }
                     });
 
-                    loadingIndicator.style.display = 'none';
-                    listaContainer.style.display = 'grid';
+                    loadingIndicator.style.display = 'none'; // Esconde o "Carregando"
+                    listaContainer.style.display = 'grid'; // Mostra a lista de livros
                 })
                 .catch(error => {
                     console.error('Erro ao buscar os livros:', error);
