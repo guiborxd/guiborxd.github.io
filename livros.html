@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leitura da Bíblia | Farol da Fé</title>
+    <title>Livros da Bíblia | Farol da Fé</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,14 +11,6 @@
     <style>
         body { font-family: 'Montserrat', sans-serif; }
         h1, h2, h3 { font-family: 'Lora', serif; }
-        .versiculo-numero {
-            font-weight: bold;
-            color: #a16207; /* Cor âmbar escura */
-            float: left;
-            margin-right: 8px;
-            font-size: 0.8em;
-            line-height: 1.5;
-        }
     </style>
 </head>
 <body class="bg-amber-50 text-stone-800">
@@ -36,21 +28,19 @@
 
     <!-- Conteúdo Principal -->
     <main class="container mx-auto px-6 py-12">
-        <div id="loading" class="text-center text-xl"><p>Carregando conteúdo...</p></div>
-
-        <div id="conteudo-leitura" class="hidden">
-            <h1 id="nome-livro" class="text-4xl font-bold text-center text-stone-800 mb-4"></h1>
-            <h2 id="capitulo-selecionado" class="text-2xl text-center text-stone-600 mb-8"></h2>
-
-            <!-- Seletor de Capítulos -->
-            <div class="mb-8 text-center">
-                <label for="seletor-capitulos" class="mr-2">Escolha um capítulo:</label>
-                <select id="seletor-capitulos" class="p-2 rounded-md border-2 border-stone-300"></select>
+        <h1 class="text-4xl font-bold text-center text-stone-800 mb-10">Livros das Escrituras Sagradas</h1>
+        
+        <!-- Container para a lista de livros -->
+        <div id="lista-livros" class="grid md:grid-cols-2 gap-x-10 gap-y-8">
+            <!-- Antigo Testamento -->
+            <div id="antigo-testamento">
+                <h2 class="text-3xl font-semibold text-stone-700 border-b-2 border-amber-500 pb-2 mb-4">Antigo Testamento</h2>
+                <div id="antigo-lista" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
             </div>
-
-            <!-- Container dos Versículos -->
-            <div id="versiculos-container" class="bg-white p-6 md:p-8 rounded-lg shadow-md text-lg leading-relaxed">
-                <!-- Versículos serão inseridos aqui -->
+            <!-- Novo Testamento -->
+            <div id="novo-testamento">
+                <h2 class="text-3xl font-semibold text-stone-700 border-b-2 border-amber-500 pb-2 mb-4">Novo Testamento</h2>
+                <div id="novo-lista" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
             </div>
         </div>
     </main>
@@ -61,102 +51,95 @@
     </footer>
 
     <script>
+        // A lista de livros agora está embutida diretamente no código.
+        // Isso elimina a necessidade de uma chamada de rede (fetch) e previne os erros de conexão.
+        const livros = [
+            {"abbrev":"gn","name":"Gênesis","testament":"VT"},
+            {"abbrev":"ex","name":"Êxodo","testament":"VT"},
+            {"abbrev":"lv","name":"Levítico","testament":"VT"},
+            {"abbrev":"nm","name":"Números","testament":"VT"},
+            {"abbrev":"dt","name":"Deuteronômio","testament":"VT"},
+            {"abbrev":"js","name":"Josué","testament":"VT"},
+            {"abbrev":"jz","name":"Juízes","testament":"VT"},
+            {"abbrev":"rt","name":"Rute","testament":"VT"},
+            {"abbrev":"1sm","name":"1º Samuel","testament":"VT"},
+            {"abbrev":"2sm","name":"2º Samuel","testament":"VT"},
+            {"abbrev":"1rs","name":"1º Reis","testament":"VT"},
+            {"abbrev":"2rs","name":"2º Reis","testament":"VT"},
+            {"abbrev":"1cr","name":"1º Crônicas","testament":"VT"},
+            {"abbrev":"2cr","name":"2º Crônicas","testament":"VT"},
+            {"abbrev":"ed","name":"Esdras","testament":"VT"},
+            {"abbrev":"ne","name":"Neemias","testament":"VT"},
+            {"abbrev":"et","name":"Ester","testament":"VT"},
+            {"abbrev":"job","name":"Jó","testament":"VT"},
+            {"abbrev":"sl","name":"Salmos","testament":"VT"},
+            {"abbrev":"pv","name":"Provérbios","testament":"VT"},
+            {"abbrev":"ec","name":"Eclesiastes","testament":"VT"},
+            {"abbrev":"ct","name":"Cânticos","testament":"VT"},
+            {"abbrev":"is","name":"Isaías","testament":"VT"},
+            {"abbrev":"jr","name":"Jeremias","testament":"VT"},
+            {"abbrev":"lm","name":"Lamentações de Jeremias","testament":"VT"},
+            {"abbrev":"ez","name":"Ezequiel","testament":"VT"},
+            {"abbrev":"dn","name":"Daniel","testament":"VT"},
+            {"abbrev":"os","name":"Oséias","testament":"VT"},
+            {"abbrev":"jl","name":"Joel","testament":"VT"},
+            {"abbrev":"am","name":"Amós","testament":"VT"},
+            {"abbrev":"ob","name":"Obadias","testament":"VT"},
+            {"abbrev":"jn","name":"Jonas","testament":"VT"},
+            {"abbrev":"mq","name":"Miquéias","testament":"VT"},
+            {"abbrev":"na","name":"Naum","testament":"VT"},
+            {"abbrev":"hc","name":"Habacuque","testament":"VT"},
+            {"abbrev":"sf","name":"Sofonias","testament":"VT"},
+            {"abbrev":"ag","name":"Ageu","testament":"VT"},
+            {"abbrev":"zc","name":"Zacarias","testament":"VT"},
+            {"abbrev":"ml","name":"Malaquias","testament":"VT"},
+            {"abbrev":"mt","name":"Mateus","testament":"NT"},
+            {"abbrev":"mc","name":"Marcos","testament":"NT"},
+            {"abbrev":"lc","name":"Lucas","testament":"NT"},
+            {"abbrev":"jo","name":"João","testament":"NT"},
+            {"abbrev":"at","name":"Atos","testament":"NT"},
+            {"abbrev":"rm","name":"Romanos","testament":"NT"},
+            {"abbrev":"1co","name":"1ª Coríntios","testament":"NT"},
+            {"abbrev":"2co","name":"2ª Coríntios","testament":"NT"},
+            {"abbrev":"gl","name":"Gálatas","testament":"NT"},
+            {"abbrev":"ef","name":"Efésios","testament":"NT"},
+            {"abbrev":"fp","name":"Filipenses","testament":"NT"},
+            {"abbrev":"cl","name":"Colossenses","testament":"NT"},
+            {"abbrev":"1ts","name":"1ª Tessalonicenses","testament":"NT"},
+            {"abbrev":"2ts","name":"2ª Tessalonicenses","testament":"NT"},
+            {"abbrev":"1tm","name":"1ª Timóteo","testament":"NT"},
+            {"abbrev":"2tm","name":"2ª Timóteo","testament":"NT"},
+            {"abbrev":"tt","name":"Tito","testament":"NT"},
+            {"abbrev":"fm","name":"Filemom","testament":"NT"},
+            {"abbrev":"hb","name":"Hebreus","testament":"NT"},
+            {"abbrev":"tg","name":"Tiago","testament":"NT"},
+            {"abbrev":"1pe","name":"1ª Pedro","testament":"NT"},
+            {"abbrev":"2pe","name":"2ª Pedro","testament":"NT"},
+            {"abbrev":"1jo","name":"1ª João","testament":"NT"},
+            {"abbrev":"2jo","name":"2ª João","testament":"NT"},
+            {"abbrev":"3jo","name":"3ª João","testament":"NT"},
+            {"abbrev":"jd","name":"Judas","testament":"NT"},
+            {"abbrev":"ap","name":"Apocalipse","testament":"NT"}
+        ];
+
         document.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const abbrev = params.get('abbrev');
-
-            const loadingEl = document.getElementById('loading');
-            const conteudoEl = document.getElementById('conteudo-leitura');
-            const nomeLivroEl = document.getElementById('nome-livro');
-            const capituloSelecionadoEl = document.getElementById('capitulo-selecionado');
-            const seletorCapitulosEl = document.getElementById('seletor-capitulos');
-            const versiculosContainerEl = document.getElementById('versiculos-container');
-
-            if (!abbrev) {
-                loadingEl.innerHTML = '<p>Nenhum livro selecionado. Volte para a <a href="livros.html" class="underline">lista de livros</a>.</p>';
-                return;
-            }
+            const antigoLista = document.getElementById('antigo-lista');
+            const novoLista = document.getElementById('novo-lista');
             
-            const proxyBaseUrl = 'https://api.codetabs.com/v1/proxy?quest=';
+            livros.forEach(livro => {
+                const link = document.createElement('a');
+                link.href = `leitura.html?abbrev=${livro.abbrev}`;
+                link.textContent = livro.name;
+                link.className = 'block p-3 bg-white rounded-lg shadow hover:bg-amber-100 hover:shadow-md transition-all text-center';
 
-            function carregarCapitulo(capitulo) {
-                versiculosContainerEl.innerHTML = '<p>Carregando versículos...</p>';
-                capituloSelecionadoEl.textContent = `Capítulo ${capitulo}`;
-
-                const apiUrl = `https://www.abibliadigital.com.br/api/verses/nvi/${abbrev}/${capitulo}`;
-                const proxyUrl = `${proxyBaseUrl}${apiUrl}`;
-
-                fetch(proxyUrl)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        versiculosContainerEl.innerHTML = ''; // Limpa o container
-                        
-                        // Verificação de segurança: garante que data.verses existe e é um array
-                        if (data && data.verses && Array.isArray(data.verses)) {
-                            data.verses.forEach(v => {
-                                const p = document.createElement('p');
-                                p.innerHTML = `<span class="versiculo-numero">${v.number}</span> ${v.text}`;
-                                p.className = "mb-3";
-                                versiculosContainerEl.appendChild(p);
-                            });
-                        } else {
-                            // Caso a resposta não venha no formato esperado
-                            throw new Error('Formato de dados dos versículos inválido.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erro ao buscar versículos:', error);
-                        versiculosContainerEl.innerHTML = '<p>Não foi possível carregar os versículos. Por favor, tente novamente.</p>';
-                    });
-            }
-
-            const bookApiUrl = `https://www.abibliadigital.com.br/api/books/${abbrev}`;
-            const bookProxyUrl = `${proxyBaseUrl}${bookApiUrl}`;
-
-            fetch(bookProxyUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(livroData => {
-                    // Verificação de segurança para os dados do livro
-                    if (livroData && livroData.name && livroData.chapters) {
-                        nomeLivroEl.textContent = livroData.name;
-                        
-                        // Limpa opções antigas antes de adicionar novas
-                        seletorCapitulosEl.innerHTML = ''; 
-                        for (let i = 1; i <= livroData.chapters; i++) {
-                            const option = document.createElement('option');
-                            option.value = i;
-                            option.textContent = i;
-                            seletorCapitulosEl.appendChild(option);
-                        }
-
-                        seletorCapitulosEl.addEventListener('change', (e) => {
-                            carregarCapitulo(e.target.value);
-                        });
-
-                        // Carrega o primeiro capítulo por padrão
-                        carregarCapitulo(1);
-
-                        loadingEl.style.display = 'none';
-                        conteudoEl.classList.remove('hidden');
-                    } else {
-                        throw new Error('Formato de dados do livro inválido.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar detalhes do livro:', error);
-                    loadingEl.innerHTML = '<p>Não foi possível carregar o livro. Tente novamente.</p>';
-                });
+                if (livro.testament === 'VT') {
+                    antigoLista.appendChild(link);
+                } else {
+                    novoLista.appendChild(link);
+                }
+            });
         });
     </script>
+
 </body>
 </html>
