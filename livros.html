@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Livros da Bíblia | Farol da Fé</title>
+    <title>Leitura da Bíblia | Farol da Fé</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,6 +11,14 @@
     <style>
         body { font-family: 'Montserrat', sans-serif; }
         h1, h2, h3 { font-family: 'Lora', serif; }
+        .versiculo-numero {
+            font-weight: bold;
+            color: #a16207; /* Cor âmbar escura */
+            float: left;
+            margin-right: 8px;
+            font-size: 0.8em;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body class="bg-amber-50 text-stone-800">
@@ -28,19 +36,21 @@
 
     <!-- Conteúdo Principal -->
     <main class="container mx-auto px-6 py-12">
-        <h1 class="text-4xl font-bold text-center text-stone-800 mb-10">Livros das Escrituras Sagradas</h1>
-        
-        <!-- Container para a lista de livros -->
-        <div id="lista-livros" class="grid md:grid-cols-2 gap-x-10 gap-y-8">
-            <!-- Antigo Testamento -->
-            <div id="antigo-testamento">
-                <h2 class="text-3xl font-semibold text-stone-700 border-b-2 border-amber-500 pb-2 mb-4">Antigo Testamento</h2>
-                <div id="antigo-lista" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+        <div id="loading" class="text-center text-xl"><p>Carregando conteúdo...</p></div>
+
+        <div id="conteudo-leitura" class="hidden">
+            <h1 id="nome-livro" class="text-4xl font-bold text-center text-stone-800 mb-4"></h1>
+            <h2 id="capitulo-selecionado" class="text-2xl text-center text-stone-600 mb-8"></h2>
+
+            <!-- Seletor de Capítulos -->
+            <div class="mb-8 text-center">
+                <label for="seletor-capitulos" class="mr-2">Escolha um capítulo:</label>
+                <select id="seletor-capitulos" class="p-2 rounded-md border-2 border-stone-300"></select>
             </div>
-            <!-- Novo Testamento -->
-            <div id="novo-testamento">
-                <h2 class="text-3xl font-semibold text-stone-700 border-b-2 border-amber-500 pb-2 mb-4">Novo Testamento</h2>
-                <div id="novo-lista" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+
+            <!-- Container dos Versículos -->
+            <div id="versiculos-container" class="bg-white p-6 md:p-8 rounded-lg shadow-md text-lg leading-relaxed">
+                <!-- Versículos serão inseridos aqui -->
             </div>
         </div>
     </main>
@@ -51,95 +61,102 @@
     </footer>
 
     <script>
-        // A lista de livros agora está embutida diretamente no código.
-        // Isso elimina a necessidade de uma chamada de rede (fetch) e previne os erros.
-        const livros = [
-            {"abbrev":{"pt":"gn","en":"gn"},"author":"Moisés","chapters":50,"group":"Pentateuco","name":"Gênesis","testament":"VT"},
-            {"abbrev":{"pt":"ex","en":"ex"},"author":"Moisés","chapters":40,"group":"Pentateuco","name":"Êxodo","testament":"VT"},
-            {"abbrev":{"pt":"lv","en":"lv"},"author":"Moisés","chapters":27,"group":"Pentateuco","name":"Levítico","testament":"VT"},
-            {"abbrev":{"pt":"nm","en":"nm"},"author":"Moisés","chapters":36,"group":"Pentateuco","name":"Números","testament":"VT"},
-            {"abbrev":{"pt":"dt","en":"dt"},"author":"Moisés","chapters":34,"group":"Pentateuco","name":"Deuteronômio","testament":"VT"},
-            {"abbrev":{"pt":"js","en":"js"},"author":"Josué","chapters":24,"group":"Históricos","name":"Josué","testament":"VT"},
-            {"abbrev":{"pt":"jz","en":"jz"},"author":"Samuel","chapters":21,"group":"Históricos","name":"Juízes","testament":"VT"},
-            {"abbrev":{"pt":"rt","en":"rt"},"author":"Samuel","chapters":4,"group":"Históricos","name":"Rute","testament":"VT"},
-            {"abbrev":{"pt":"1sm","en":"1sm"},"author":"Samuel, Gade, Natã","chapters":31,"group":"Históricos","name":"1º Samuel","testament":"VT"},
-            {"abbrev":{"pt":"2sm","en":"2sm"},"author":"Samuel, Gade, Natã","chapters":24,"group":"Históricos","name":"2º Samuel","testament":"VT"},
-            {"abbrev":{"pt":"1rs","en":"1rs"},"author":"Jeremias","chapters":22,"group":"Históricos","name":"1º Reis","testament":"VT"},
-            {"abbrev":{"pt":"2rs","en":"2rs"},"author":"Jeremias","chapters":25,"group":"Históricos","name":"2º Reis","testament":"VT"},
-            {"abbrev":{"pt":"1cr","en":"1cr"},"author":"Esdras","chapters":29,"group":"Históricos","name":"1º Crônicas","testament":"VT"},
-            {"abbrev":{"pt":"2cr","en":"2cr"},"author":"Esdras","chapters":36,"group":"Históricos","name":"2º Crônicas","testament":"VT"},
-            {"abbrev":{"pt":"ed","en":"ed"},"author":"Esdras","chapters":10,"group":"Históricos","name":"Esdras","testament":"VT"},
-            {"abbrev":{"pt":"ne","en":"ne"},"author":"Neemias","chapters":13,"group":"Históricos","name":"Neemias","testament":"VT"},
-            {"abbrev":{"pt":"et","en":"et"},"author":"Mardoqueu","chapters":10,"group":"Históricos","name":"Ester","testament":"VT"},
-            {"abbrev":{"pt":"job","en":"job"},"author":"Moisés","chapters":42,"group":"Poéticos","name":"Jó","testament":"VT"},
-            {"abbrev":{"pt":"sl","en":"sl"},"author":"Davi, Asafe, Salomão","chapters":150,"group":"Poéticos","name":"Salmos","testament":"VT"},
-            {"abbrev":{"pt":"pv","en":"pv"},"author":"Salomão","chapters":31,"group":"Poéticos","name":"Provérbios","testament":"VT"},
-            {"abbrev":{"pt":"ec","en":"ec"},"author":"Salomão","chapters":12,"group":"Poéticos","name":"Eclesiastes","testament":"VT"},
-            {"abbrev":{"pt":"ct","en":"ct"},"author":"Salomão","chapters":8,"group":"Poéticos","name":"Cânticos","testament":"VT"},
-            {"abbrev":{"pt":"is","en":"is"},"author":"Isaías","chapters":66,"group":"Profetas maiores","name":"Isaías","testament":"VT"},
-            {"abbrev":{"pt":"jr","en":"jr"},"author":"Jeremias","chapters":52,"group":"Profetas maiores","name":"Jeremias","testament":"VT"},
-            {"abbrev":{"pt":"lm","en":"lm"},"author":"Jeremias","chapters":5,"group":"Profetas maiores","name":"Lamentações de Jeremias","testament":"VT"},
-            {"abbrev":{"pt":"ez","en":"ez"},"author":"Ezequiel","chapters":48,"group":"Profetas maiores","name":"Ezequiel","testament":"VT"},
-            {"abbrev":{"pt":"dn","en":"dn"},"author":"Daniel","chapters":12,"group":"Profetas maiores","name":"Daniel","testament":"VT"},
-            {"abbrev":{"pt":"os","en":"os"},"author":"Oséias","chapters":14,"group":"Profetas menores","name":"Oséias","testament":"VT"},
-            {"abbrev":{"pt":"jl","en":"jl"},"author":"Joel","chapters":3,"group":"Profetas menores","name":"Joel","testament":"VT"},
-            {"abbrev":{"pt":"am","en":"am"},"author":"Amós","chapters":9,"group":"Profetas menores","name":"Amós","testament":"VT"},
-            {"abbrev":{"pt":"ob","en":"ob"},"author":"Obadias","chapters":1,"group":"Profetas menores","name":"Obadias","testament":"VT"},
-            {"abbrev":{"pt":"jn","en":"jn"},"author":"Jonas","chapters":4,"group":"Profetas menores","name":"Jonas","testament":"VT"},
-            {"abbrev":{"pt":"mq","en":"mq"},"author":"Miquéias","chapters":7,"group":"Profetas menores","name":"Miquéias","testament":"VT"},
-            {"abbrev":{"pt":"na","en":"na"},"author":"Naum","chapters":3,"group":"Profetas menores","name":"Naum","testament":"VT"},
-            {"abbrev":{"pt":"hc","en":"hc"},"author":"Habacuque","chapters":3,"group":"Profetas menores","name":"Habacuque","testament":"VT"},
-            {"abbrev":{"pt":"sf","en":"sf"},"author":"Sofonias","chapters":3,"group":"Profetas menores","name":"Sofonias","testament":"VT"},
-            {"abbrev":{"pt":"ag","en":"ag"},"author":"Ageu","chapters":2,"group":"Profetas menores","name":"Ageu","testament":"VT"},
-            {"abbrev":{"pt":"zc","en":"zc"},"author":"Zacarias","chapters":14,"group":"Profetas menores","name":"Zacarias","testament":"VT"},
-            {"abbrev":{"pt":"ml","en":"ml"},"author":"Malaquias","chapters":4,"group":"Profetas menores","name":"Malaquias","testament":"VT"},
-            {"abbrev":{"pt":"mt","en":"mt"},"author":"Mateus","chapters":28,"group":"Evangelhos","name":"Mateus","testament":"NT"},
-            {"abbrev":{"pt":"mc","en":"mc"},"author":"Marcos","chapters":16,"group":"Evangelhos","name":"Marcos","testament":"NT"},
-            {"abbrev":{"pt":"lc","en":"lc"},"author":"Lucas","chapters":24,"group":"Evangelhos","name":"Lucas","testament":"NT"},
-            {"abbrev":{"pt":"jo","en":"jo"},"author":"João","chapters":21,"group":"Evangelhos","name":"João","testament":"NT"},
-            {"abbrev":{"pt":"at","en":"at"},"author":"Lucas","chapters":28,"group":"Histórico","name":"Atos","testament":"NT"},
-            {"abbrev":{"pt":"rm","en":"rm"},"author":"Paulo","chapters":16,"group":"Cartas","name":"Romanos","testament":"NT"},
-            {"abbrev":{"pt":"1co","en":"1co"},"author":"Paulo","chapters":16,"group":"Cartas","name":"1ª Coríntios","testament":"NT"},
-            {"abbrev":{"pt":"2co","en":"2co"},"author":"Paulo","chapters":13,"group":"Cartas","name":"2ª Coríntios","testament":"NT"},
-            {"abbrev":{"pt":"gl","en":"gl"},"author":"Paulo","chapters":6,"group":"Cartas","name":"Gálatas","testament":"NT"},
-            {"abbrev":{"pt":"ef","en":"ef"},"author":"Paulo","chapters":6,"group":"Cartas","name":"Efésios","testament":"NT"},
-            {"abbrev":{"pt":"fp","en":"fp"},"author":"Paulo","chapters":4,"group":"Cartas","name":"Filipenses","testament":"NT"},
-            {"abbrev":{"pt":"cl","en":"cl"},"author":"Paulo","chapters":4,"group":"Cartas","name":"Colossenses","testament":"NT"},
-            {"abbrev":{"pt":"1ts","en":"1ts"},"author":"Paulo","chapters":5,"group":"Cartas","name":"1ª Tessalonicenses","testament":"NT"},
-            {"abbrev":{"pt":"2ts","en":"2ts"},"author":"Paulo","chapters":3,"group":"Cartas","name":"2ª Tessalonicenses","testament":"NT"},
-            {"abbrev":{"pt":"1tm","en":"1tm"},"author":"Paulo","chapters":6,"group":"Cartas","name":"1ª Timóteo","testament":"NT"},
-            {"abbrev":{"pt":"2tm","en":"2tm"},"author":"Paulo","chapters":4,"group":"Cartas","name":"2ª Timóteo","testament":"NT"},
-            {"abbrev":{"pt":"tt","en":"tt"},"author":"Paulo","chapters":3,"group":"Cartas","name":"Tito","testament":"NT"},
-            {"abbrev":{"pt":"fm","en":"fm"},"author":"Paulo","chapters":1,"group":"Cartas","name":"Filemom","testament":"NT"},
-            {"abbrev":{"pt":"hb","en":"hb"},"author":"Desconhecido","chapters":13,"group":"Cartas","name":"Hebreus","testament":"NT"},
-            {"abbrev":{"pt":"tg","en":"tg"},"author":"Tiago","chapters":5,"group":"Cartas","name":"Tiago","testament":"NT"},
-            {"abbrev":{"pt":"1pe","en":"1pe"},"author":"Pedro","chapters":5,"group":"Cartas","name":"1ª Pedro","testament":"NT"},
-            {"abbrev":{"pt":"2pe","en":"2pe"},"author":"Pedro","chapters":3,"group":"Cartas","name":"2ª Pedro","testament":"NT"},
-            {"abbrev":{"pt":"1jo","en":"1jo"},"author":"João","chapters":5,"group":"Cartas","name":"1ª João","testament":"NT"},
-            {"abbrev":{"pt":"2jo","en":"2jo"},"author":"João","chapters":1,"group":"Cartas","name":"2ª João","testament":"NT"},
-            {"abbrev":{"pt":"3jo","en":"3jo"},"author":"João","chapters":1,"group":"Cartas","name":"3ª João","testament":"NT"},
-            {"abbrev":{"pt":"jd","en":"jd"},"author":"Judas","chapters":1,"group":"Cartas","name":"Judas","testament":"NT"},
-            {"abbrev":{"pt":"ap","en":"ap"},"author":"João","chapters":22,"group":"Revelações","name":"Apocalipse","testament":"NT"}
-        ];
-
         document.addEventListener('DOMContentLoaded', () => {
-            const antigoLista = document.getElementById('antigo-lista');
-            const novoLista = document.getElementById('novo-lista');
-            
-            livros.forEach(livro => {
-                const link = document.createElement('a');
-                link.href = `leitura.html?abbrev=${livro.abbrev.pt}`;
-                link.textContent = livro.name;
-                link.className = 'block p-3 bg-white rounded-lg shadow hover:bg-amber-100 hover:shadow-md transition-all text-center';
+            const params = new URLSearchParams(window.location.search);
+            const abbrev = params.get('abbrev');
 
-                if (livro.testament === 'VT') {
-                    antigoLista.appendChild(link);
-                } else {
-                    novoLista.appendChild(link);
-                }
-            });
+            const loadingEl = document.getElementById('loading');
+            const conteudoEl = document.getElementById('conteudo-leitura');
+            const nomeLivroEl = document.getElementById('nome-livro');
+            const capituloSelecionadoEl = document.getElementById('capitulo-selecionado');
+            const seletorCapitulosEl = document.getElementById('seletor-capitulos');
+            const versiculosContainerEl = document.getElementById('versiculos-container');
+
+            if (!abbrev) {
+                loadingEl.innerHTML = '<p>Nenhum livro selecionado. Volte para a <a href="livros.html" class="underline">lista de livros</a>.</p>';
+                return;
+            }
+            
+            const proxyBaseUrl = 'https://api.codetabs.com/v1/proxy?quest=';
+
+            function carregarCapitulo(capitulo) {
+                versiculosContainerEl.innerHTML = '<p>Carregando versículos...</p>';
+                capituloSelecionadoEl.textContent = `Capítulo ${capitulo}`;
+
+                const apiUrl = `https://www.abibliadigital.com.br/api/verses/nvi/${abbrev}/${capitulo}`;
+                const proxyUrl = `${proxyBaseUrl}${apiUrl}`;
+
+                fetch(proxyUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        versiculosContainerEl.innerHTML = ''; // Limpa o container
+                        
+                        // Verificação de segurança: garante que data.verses existe e é um array
+                        if (data && data.verses && Array.isArray(data.verses)) {
+                            data.verses.forEach(v => {
+                                const p = document.createElement('p');
+                                p.innerHTML = `<span class="versiculo-numero">${v.number}</span> ${v.text}`;
+                                p.className = "mb-3";
+                                versiculosContainerEl.appendChild(p);
+                            });
+                        } else {
+                            // Caso a resposta não venha no formato esperado
+                            throw new Error('Formato de dados dos versículos inválido.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar versículos:', error);
+                        versiculosContainerEl.innerHTML = '<p>Não foi possível carregar os versículos. Por favor, tente novamente.</p>';
+                    });
+            }
+
+            const bookApiUrl = `https://www.abibliadigital.com.br/api/books/${abbrev}`;
+            const bookProxyUrl = `${proxyBaseUrl}${bookApiUrl}`;
+
+            fetch(bookProxyUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(livroData => {
+                    // Verificação de segurança para os dados do livro
+                    if (livroData && livroData.name && livroData.chapters) {
+                        nomeLivroEl.textContent = livroData.name;
+                        
+                        // Limpa opções antigas antes de adicionar novas
+                        seletorCapitulosEl.innerHTML = ''; 
+                        for (let i = 1; i <= livroData.chapters; i++) {
+                            const option = document.createElement('option');
+                            option.value = i;
+                            option.textContent = i;
+                            seletorCapitulosEl.appendChild(option);
+                        }
+
+                        seletorCapitulosEl.addEventListener('change', (e) => {
+                            carregarCapitulo(e.target.value);
+                        });
+
+                        // Carrega o primeiro capítulo por padrão
+                        carregarCapitulo(1);
+
+                        loadingEl.style.display = 'none';
+                        conteudoEl.classList.remove('hidden');
+                    } else {
+                        throw new Error('Formato de dados do livro inválido.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar detalhes do livro:', error);
+                    loadingEl.innerHTML = '<p>Não foi possível carregar o livro. Tente novamente.</p>';
+                });
         });
     </script>
-
 </body>
 </html>
