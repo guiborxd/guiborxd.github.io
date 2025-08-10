@@ -77,55 +77,81 @@
                 return;
             }
             
-            const proxyBaseUrl = 'https://api.codetabs.com/v1/proxy?quest=';
+            // Usando um proxy CORS mais robusto e confiável
+            const proxyBaseUrl = 'https://corsproxy.io/?';
 
             function carregarCapitulo(capitulo) {
                 versiculosContainerEl.innerHTML = '<p>Carregando versículos...</p>';
                 capituloSelecionadoEl.textContent = `Capítulo ${capitulo}`;
 
                 const apiUrl = `https://www.abibliadigital.com.br/api/verses/nvi/${abbrev}/${capitulo}`;
-                const proxyUrl = `${proxyBaseUrl}${apiUrl}`;
+                const proxyUrl = `${proxyBaseUrl}${encodeURIComponent(apiUrl)}`;
 
                 fetch(proxyUrl)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        versiculosContainerEl.innerHTML = '';
-                        data.verses.forEach(v => {
-                            const p = document.createElement('p');
-                            p.innerHTML = `<span class="versiculo-numero">${v.number}</span> ${v.text}`;
-                            p.className = "mb-3";
-                            versiculosContainerEl.appendChild(p);
-                        });
+                        versiculosContainerEl.innerHTML = ''; // Limpa o container
+                        
+                        // Verificação de segurança: garante que data.verses existe e é um array
+                        if (data && data.verses && Array.isArray(data.verses)) {
+                            data.verses.forEach(v => {
+                                const p = document.createElement('p');
+                                p.innerHTML = `<span class="versiculo-numero">${v.number}</span> ${v.text}`;
+                                p.className = "mb-3";
+                                versiculosContainerEl.appendChild(p);
+                            });
+                        } else {
+                            // Caso a resposta não venha no formato esperado
+                            throw new Error('Formato de dados dos versículos inválido.');
+                        }
                     })
                     .catch(error => {
                         console.error('Erro ao buscar versículos:', error);
-                        versiculosContainerEl.innerHTML = '<p>Erro ao carregar os versículos.</p>';
+                        versiculosContainerEl.innerHTML = '<p>Não foi possível carregar os versículos. Por favor, tente novamente.</p>';
                     });
             }
 
             const bookApiUrl = `https://www.abibliadigital.com.br/api/books/${abbrev}`;
-            const bookProxyUrl = `${proxyBaseUrl}${bookApiUrl}`;
+            const bookProxyUrl = `${proxyBaseUrl}${encodeURIComponent(bookApiUrl)}`;
 
             fetch(bookProxyUrl)
-                .then(response => response.json())
-                .then(livroData => {
-                    nomeLivroEl.textContent = livroData.name;
-                    
-                    for (let i = 1; i <= livroData.chapters; i++) {
-                        const option = document.createElement('option');
-                        option.value = i;
-                        option.textContent = i;
-                        seletorCapitulosEl.appendChild(option);
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
+                    return response.json();
+                })
+                .then(livroData => {
+                    // Verificação de segurança para os dados do livro
+                    if (livroData && livroData.name && livroData.chapters) {
+                        nomeLivroEl.textContent = livroData.name;
+                        
+                        // Limpa opções antigas antes de adicionar novas
+                        seletorCapitulosEl.innerHTML = ''; 
+                        for (let i = 1; i <= livroData.chapters; i++) {
+                            const option = document.createElement('option');
+                            option.value = i;
+                            option.textContent = i;
+                            seletorCapitulosEl.appendChild(option);
+                        }
 
-                    seletorCapitulosEl.addEventListener('change', (e) => {
-                        carregarCapitulo(e.target.value);
-                    });
+                        seletorCapitulosEl.addEventListener('change', (e) => {
+                            carregarCapitulo(e.target.value);
+                        });
 
-                    carregarCapitulo(1);
+                        // Carrega o primeiro capítulo por padrão
+                        carregarCapitulo(1);
 
-                    loadingEl.style.display = 'none';
-                    conteudoEl.classList.remove('hidden');
+                        loadingEl.style.display = 'none';
+                        conteudoEl.classList.remove('hidden');
+                    } else {
+                        throw new Error('Formato de dados do livro inválido.');
+                    }
                 })
                 .catch(error => {
                     console.error('Erro ao buscar detalhes do livro:', error);
