@@ -67,15 +67,19 @@
 
             // URL da API original
             const apiUrl = 'https://www.abibliadigital.com.br/api/books';
-            // URL de um proxy diferente e mais direto que retorna o conteúdo raw (cru)
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+            // URL do proxy que encapsula a resposta. É mais estável.
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
 
             fetch(proxyUrl)
                 .then(response => {
-                    if (response.ok) return response.json(); // O proxy 'raw' permite o .json() direto
+                    if (response.ok) return response.json();
                     throw new Error('A resposta da rede não foi ok.');
                 })
-                .then(livros => {
+                .then(data => {
+                    // A resposta real da API vem como uma string dentro da propriedade 'contents'.
+                    // Precisamos converter essa string para um objeto JSON.
+                    const livros = JSON.parse(data.contents);
+
                     // Verificação de segurança para garantir que a resposta é um array
                     if (!Array.isArray(livros)) {
                         console.error("A resposta da API não é um array:", livros);
