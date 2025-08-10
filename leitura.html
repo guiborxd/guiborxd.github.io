@@ -114,17 +114,17 @@
                 return;
             }
             
-            // Usando um proxy CORS diferente e mais robusto
-            const proxyBaseUrl = 'https://corsproxy.io/?';
+            // Usando a API estável que não precisa de proxy
+            const baseApiUrl = 'https://bibleapi.co/api';
 
             function carregarCapitulo(capitulo) {
                 versiculosContainerEl.innerHTML = '<p>Carregando versículos...</p>';
                 capituloSelecionadoEl.textContent = `Capítulo ${capitulo}`;
 
-                const apiUrl = `https://www.abibliadigital.com.br/api/verses/nvi/${abbrev}/${capitulo}`;
-                const proxyUrl = `${proxyBaseUrl}${encodeURIComponent(apiUrl)}`;
+                // A versão da Bíblia usada é a NVI (Nova Versão Internacional) em português
+                const apiUrl = `${baseApiUrl}/verses/nvi/${abbrev}/${capitulo}`;
 
-                fetch(proxyUrl)
+                fetch(apiUrl)
                     .then(response => {
                         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                         return response.json();
